@@ -46,3 +46,5 @@ One : -1
 [jon2allen@freebsd14 ~/github/Cheetah/test]$
 
 tested with valgrind - no leaks
+
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt ./jon_proc_test > jon_proc_out.txt &
