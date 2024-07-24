@@ -45,3 +45,4 @@ Two : 2
 One : -1
 [jon2allen@freebsd14 ~/github/Cheetah/test]$
 
+tested with valgrind - no leaks
