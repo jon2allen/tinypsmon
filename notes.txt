@@ -1,0 +1,47 @@
+
+timer_tester
+
+clang++18 -I $HOME/github/Cheetah/include -std=gnu++2a -lpthread timer_tester.cc -o timer_tester
+
+had to modify the Cheeta.h to remove cricle include
+
+
+clang++18 -I $HOME/github/Cheetah/include -std=gnu++2a -lpthread jona_test_timer.cc -o jona_test_timer
+
+
+lru thing - SOME GEM THAT AUTHOR LEFT IN ..... 
+
+[jon2allen@freebsd14 ~/github/Cheetah/test]$ clang++18 -std=gnu++2a -lpthread lru_lfu_caches.cc -o lru2
+[jon2allen@freebsd14 ~/github/Cheetah/test]$ ll
+total 325
+drwxr-xr-x   4 jon2allen jon2allen     17 Jul 18 23:25 .
+drwxr-xr-x  10 jon2allen jon2allen     21 Jul 18 23:16 ..
+-rw-r--r--   1 jon2allen jon2allen  14777 Jun 21 08:44 CMakeCache.txt
+drwxr-xr-x   7 jon2allen jon2allen     14 Jun 21 09:17 CMakeFiles
+-rw-r--r--   1 jon2allen jon2allen    241 Jun 20 23:30 CMakeLists.txt
+drwxr-xr-x   2 jon2allen jon2allen      4 Jun 21 08:49 Cheetah
+-rw-r--r--   1 jon2allen jon2allen   5187 Jun 21 08:44 Makefile
+-rw-r--r--   1 jon2allen jon2allen   1506 Jun 21 08:44 cmake_install.cmake
+-rwxr-xr-x   1 jon2allen jon2allen  57960 Jun 21 21:19 jona_test_timer
+-rw-r--r--   1 jon2allen jon2allen   1042 Jun 21 16:12 jona_test_timer.cc
+-rwxr-xr-x   1 jon2allen jon2allen 279496 Jun 21 21:19 lru
+-rwxr-xr-x   1 jon2allen jon2allen 279512 Jul 18 23:25 lru2
+-rw-r--r--   1 jon2allen jon2allen  12882 Jun 20 23:30 lru_lfu_caches.cc
+-rw-r--r--   1 jon2allen jon2allen    270 Jun 21 17:04 notes.txt
+-rw-r--r--   1 jon2allen jon2allen   1988 Jun 21 10:00 out.txt
+-rwxr-xr-x   1 jon2allen jon2allen  57784 Jun 21 15:55 timer_tester
+-rw-r--r--   1 jon2allen jon2allen   3671 Jun 21 08:53 timer_tester.cc
+[jon2allen@freebsd14 ~/github/Cheetah/test]$ ./lru2
+Test the LRU cache ......
+Six : 6
+Five : 5
+Two : 2
+One : 1
+Four : 4
+Test the LFU cache ......
+Six : 6
+Five : 5
+Two : 2
+One : -1
+[jon2allen@freebsd14 ~/github/Cheetah/test]$
+
