@@ -1,6 +1,6 @@
 // jona test timer
 
-#include "Cheetah/TimerAlarm.h"
+#include "TimerAlarm.h"
 #include  "logger.h"
 #include <cassert>
 #include <cstdio>

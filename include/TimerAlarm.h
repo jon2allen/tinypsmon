@@ -109,7 +109,7 @@ private:
 // ----------------------------------------------------------------------------
 
 #  ifndef HMTA_DO_NOT_INCLUDE_TCC_FILES
-#    include <Cheetah/TimerAlarm.tcc>
+#    include <TimerAlarm.tcc>
 #  endif // HMTA_DO_NOT_INCLUDE_TCC_FILES
 
 // ----------------------------------------------------------------------------
