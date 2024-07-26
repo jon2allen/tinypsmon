@@ -158,22 +158,45 @@ private:
 };
 
 
+struct InitializationResult {
+    Program program;
+    Script  script_info;
+};
+
+std::optional<InitializationResult> initialize(const std::string& file_path) {
+    try {
+        TomlParser parser(file_path);
+        const Program& ps1 = parser.getProgram();
+        const Script script1 = parser.getScript();
+        std::cout << "  pgm: " << ps1.pgm << "\n";
+        std::cout << "  parms: " << ps1.parms << "\n";
+        std::cout << "  user: " << ps1.user << "\n";
+
+        return InitializationResult{ps1, script1};
+    } catch (const std::exception& e) {
+        std::cerr << "Invalid TOML file: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+    
 // ----------------------------------------------------------------------------
 
 int main(int, char *[])  {
-    try {
-       TomlParser parser("config.toml");
-       const Program& ps1 = parser.getProgram();
-       const struct ::timespec rqt = {100, 0};
-       std::cout << "  pgm: " << ps1.pgm << "\n";
-       std::cout << "  parms: " << ps1.parms << "\n";
-       std::cout << "  user: " << ps1.user << "\n";
+       auto initResult = initialize("config.toml");
+       if (!initResult) {
+           return EXIT_FAILURE;
+       }
 
-       struct ::matchProcess m = {ps1.pgm, ps1.user, ps1.parms};
+       const struct ::timespec rqt = {100, 0};
+
+       struct ::matchProcess m = {initResult->program.pgm,
+            initResult->program.user, 
+            initResult->program.parms};
 
        while(true) {            
           mypoll  pspoll("mypoll", m );
-          TimerAlarm<mypoll>  timer(pspoll, 20 );
+          TimerAlarm<mypoll>  timer(pspoll, initResult->program.interval_seconds );
           std::cout << "starting...  \n";
           timer.arm ();
          
@@ -182,12 +205,7 @@ int main(int, char *[])  {
           }    
           return (EXIT_SUCCESS);
 
-    } catch (const std::exception& e) {
-       std::cerr << "Invalid TOML file: " << e.what() << std::endl;
-       return (EXIT_FAILURE);
-       }
-
-}
+ }
 
 // ----------------------------------------------------------------------------
 
