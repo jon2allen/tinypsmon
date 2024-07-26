@@ -3,7 +3,7 @@ INC_DIR = include
 TARGET_DIR = target
 
 # Flags
-CXXFLAGS = -Wall -Wextra -std=c++20 -I$(INC_DIR)
+CXXFLAGS = -Wall -Wextra -g -std=c++20 -I$(INC_DIR)
 LDFLAGS = -lkvm -lpthread
 
 # Source files

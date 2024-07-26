@@ -9,7 +9,7 @@
 pgm= "pythong"
 parms = "collect"
 user = "jon2allen"
-interval_minutes = 1
+interval_seconds = 20 
 status = "down"
 # status can be up - meanint it starts running
 # status down mesns - it should be running and is down.

@@ -7,7 +7,7 @@ struct Program {
     std::string pgm;
     std::string parms;
     std::string user;
-    int interval_minutes;
+    int interval_seconds;
     std::string status;
 };
 
@@ -50,7 +50,7 @@ private:
             program_.pgm = toml::find<std::string>(program, "pgm");
             program_.parms = toml::find<std::string>(program, "parms");
             program_.user = toml::find<std::string>(program, "user");
-            program_.interval_minutes = toml::find<int>(program, "interval_minutes");
+            program_.interval_seconds = toml::find<int>(program, "interval_seconds");
             program_.status = toml::find<std::string>(program, "status");
 
             // Parse script section
@@ -64,7 +64,9 @@ private:
         } catch (const toml::type_error& e) {
             throw std::runtime_error("Type error in TOML file: " + std::string(e.what()));
         } catch (const std::exception& e) {
-            throw std::runtime_error("Error parsing TOML file: " + std::string(e.what()));
+        //    throw std::runtime_error("Error parsing TOML file: " + std::string(e.what()));
+            throw std::runtime_error("required key missing or mis-spelled - correct toml file");
+            std::exit(EXIT_FAILURE);
         }
     }
 

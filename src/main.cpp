@@ -161,24 +161,32 @@ private:
 // ----------------------------------------------------------------------------
 
 int main(int, char *[])  {
-    TomlParser parser("config.toml");
-    const Program& ps1 = parser.getProgram();
-    const struct ::timespec rqt = {100, 0};
-    std::cout << "  pgm: " << ps1.pgm << "\n";
-    std::cout << "  parms: " << ps1.parms << "\n";
-    std::cout << "  user: " << ps1.user << "\n";
+    try {
+       TomlParser parser("config.toml");
+       const Program& ps1 = parser.getProgram();
+       const struct ::timespec rqt = {100, 0};
+       std::cout << "  pgm: " << ps1.pgm << "\n";
+       std::cout << "  parms: " << ps1.parms << "\n";
+       std::cout << "  user: " << ps1.user << "\n";
 
-    struct ::matchProcess m = {ps1.pgm, ps1.user, ps1.parms};
-    while(true) {            
-        mypoll  pspoll("mypoll", m );
-        TimerAlarm<mypoll>  timer(pspoll, 20 );
-        std::cout << "starting...  \n";
-        timer.arm ();
+       struct ::matchProcess m = {ps1.pgm, ps1.user, ps1.parms};
+
+       while(true) {            
+          mypoll  pspoll("mypoll", m );
+          TimerAlarm<mypoll>  timer(pspoll, 20 );
+          std::cout << "starting...  \n";
+          timer.arm ();
          
-        std::cout << "sleeping...  \n";
-        nanosleep( &rqt , 0); 
-    }    
-    return (EXIT_SUCCESS);
+          std::cout << "sleeping...  \n";
+          nanosleep( &rqt , 0); 
+          }    
+          return (EXIT_SUCCESS);
+
+    } catch (const std::exception& e) {
+       std::cerr << "Invalid TOML file: " << e.what() << std::endl;
+       return (EXIT_FAILURE);
+       }
+
 }
 
 // ----------------------------------------------------------------------------
