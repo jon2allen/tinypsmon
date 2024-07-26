@@ -36,6 +36,11 @@ my_key:
 process_list_test:
 	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/process_list_test3.cpp -o $(TARGET_DIR)/process_list_test
 
+shell_test:
+	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/shell_test2.cpp -o $(TARGET_DIR)/shell_test2
+
+file_perm:
+	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/file_perm.cpp -o $(TARGET_DIR)/file_perm
 # Clean
 clean:
 	rm -rf $(TARGET_DIR)
