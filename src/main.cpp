@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <kvm.h>
+#include <optional>
 #include <paths.h>
 #include <pwd.h> // Include for getpwuid
 #include <stdint.h>
@@ -112,11 +113,14 @@ public:
                             return arg.find(searchCriteria.argument) !=
                                    std::string::npos;
                           })) {
+            logger.log(" matach -> " + searchCriteria.argument);
             return true; // All conditions met
           }
         }
       }
     }
+    logger.log(" no match found -> process: " + searchCriteria.process_name +
+               " user:  " + searchCriteria.username);
     return false; // No matching process found
   }
 };
@@ -135,8 +139,12 @@ ProcessLister ps;
 class mypoll {
 
 public:
-  mypoll(std::string s, matchProcess &m, std::optional<InitializationResult> p)
-      : _s(s), _m(m), _parms(p) {}
+  mypoll(std::string s, matchProcess &m, ShellScriptExecutor my_shell)
+      : _s(s), _m(m), _shell_1(my_shell) {
+    std::vector<std::string> opts = {"arg1"};
+
+    _shell_1 = ShellScriptExecutor("./test.sh", opts);
+  }
 
   bool operator()() {
 
@@ -149,6 +157,8 @@ public:
       std::cout << "process:  " << _m.process_name << " found \n";
     } else {
       std::cout << "not found \n";
+      std::string output = _shell_1.execute();
+      std::cout << "Script output: \n" << output << std::endl;
     }
     return (true);
   }
@@ -158,6 +168,7 @@ private:
   matchProcess &_m;
   std::optional<InitializationResult> _parms;
   bool _found = false;
+  ShellScriptExecutor _shell_1;
 };
 
 std::optional<InitializationResult> initialize(const std::string &file_path) {
@@ -184,12 +195,16 @@ int main(int, char *[]) {
     return EXIT_FAILURE;
   }
 
+  std::vector<std::string> opts = {"arg1"};
+
+  auto alarm_sh = ShellScriptExecutor("./test.sh", opts);
+
   const struct ::timespec rqt = {100, 0};
 
   struct ::matchProcess m = {initResult->program.pgm, initResult->program.user,
                              initResult->program.parms};
 
-  mypoll pspoll("mypoll", m, initResult);
+  mypoll pspoll("mypoll", m, alarm_sh);
   TimerAlarm<mypoll> timer(pspoll, initResult->program.interval_seconds);
 
   timer.arm();
