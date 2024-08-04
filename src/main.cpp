@@ -174,11 +174,13 @@ public:
     }
     _found = ps.searchProcess(processes, _m);
     if (_found == true) {
-      std::cout << "process:  " << _m.process_name << " found \n";
-    } else {
-      std::cout << "not found \n";
-      std::string output = _shell_1.execute();
-      std::cout << "Script output: \n" << output << std::endl;
+
+      logger.log("process:  " + _m.process_name + " found");
+      if (ps_status == _found) {
+        std::cout << "not found \n";
+        std::string output = _shell_1.execute();
+        std::cout << "Script output: \n" << output << std::endl;
+      }
     }
     return (true);
   }
