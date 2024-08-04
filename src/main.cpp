@@ -17,6 +17,7 @@
 #include <pwd.h> // Include for getpwuid
 #include <stdint.h>
 #include <string>
+// #include <sys/resourcevar.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
 #include <sys/user.h>
@@ -155,8 +156,9 @@ ProcessLister ps;
 class mypoll {
 
 public:
-  mypoll(std::string s, matchProcess &m, ShellScriptExecutor my_shell)
-      : _s(s), _m(m), _shell_1(my_shell) {
+  mypoll(std::string s, matchProcess &m, ShellScriptExecutor my_shell,
+         bool ps_s)
+      : _s(s), _m(m), _shell_1(my_shell), ps_status(ps_s) {
     std::vector<std::string> opts = {"arg1"};
 
     _shell_1 = ShellScriptExecutor("./test.sh", opts, 10);
@@ -187,6 +189,7 @@ private:
   std::optional<InitializationResult> _parms;
   bool _found = false;
   ShellScriptExecutor _shell_1;
+  bool ps_status = false;
 };
 
 std::optional<InitializationResult> initialize(const std::string &file_path) {
@@ -202,6 +205,20 @@ std::optional<InitializationResult> initialize(const std::string &file_path) {
   } catch (const std::exception &e) {
     std::cerr << "Invalid TOML file: " << e.what() << std::endl;
     return std::nullopt;
+  }
+}
+
+bool processState(std::string status) {
+  if (status == "down") {
+    logger.log(" desired ps target is down");
+    return false;
+  }
+  if (status == "up") {
+    logger.log(" desired ps target is up ");
+    return true;
+  } else {
+    logger.log(" Unknown ps target " + status + " setting to default down");
+    return false;
   }
 }
 
@@ -253,16 +270,19 @@ int main(int argc, char *argv[]) {
     processCmdLine(cmdline1);
     exit(0);
   }
-  std::vector<std::string> opts = {"arg1"};
-
-  auto alarm_sh = ShellScriptExecutor("./test.sh", opts, 10);
+  std::vector<std::string> opts = {initResult->script_info.options};
+  std::string script1 =
+      initResult->script_info.location + "/" + initResult->script_info.pgm;
+  auto alarm_sh = ShellScriptExecutor(script1, opts, 10);
 
   const struct ::timespec rqt = {100, 0};
 
   struct ::matchProcess m = {initResult->program.pgm, initResult->program.user,
                              initResult->program.parms};
 
-  mypoll pspoll("mypoll", m, alarm_sh);
+  bool ps_state = processState(initResult->program.status);
+
+  mypoll pspoll("mypoll", m, alarm_sh, ps_state);
   TimerAlarm<mypoll> timer(pspoll, initResult->program.interval_seconds);
 
   timer.arm();
