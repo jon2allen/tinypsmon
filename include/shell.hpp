@@ -6,15 +6,41 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <array>
+#include <chrono>
 
 class ShellScriptExecutor {
 public:
-    ShellScriptExecutor(const std::string& scriptPath, const std::vector<std::string>& args)
-        : scriptPath(scriptPath), args(args) {
+    ShellScriptExecutor(const std::string& scriptPath, const std::vector<std::string>& args, int time_throttle)
+        : scriptPath(scriptPath), args(args), time_throttle(time_throttle), time_last_executed(0) {
         validateInputs();
     }
 
-    std::string execute() const {
+    std::string execute() {
+        auto now = std::chrono::system_clock::now().time_since_epoch();
+        auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(now).count();
+
+        if (time_last_executed == 0 || now_seconds >= time_last_executed + time_throttle) {
+            time_last_executed = now_seconds;
+            return executeScript();
+        } else {
+            return "Throttle time not reached. Script not executed.";
+        }
+    }
+
+private:
+    std::string scriptPath;
+    std::vector<std::string> args;
+    int time_throttle;
+    long long time_last_executed;
+
+    void validateInputs() const {
+        if (scriptPath.empty()) {
+            throw std::invalid_argument("Script path cannot be empty");
+        }
+        // Add more validation as needed
+    }
+
+    std::string executeScript() const {
         int pipefd[2];
         if (pipe(pipefd) == -1) {
             throw std::runtime_error("pipe() failed");
@@ -58,17 +84,6 @@ public:
 
             return result;
         }
-    }
-
-private:
-    std::string scriptPath;
-    std::vector<std::string> args;
-
-    void validateInputs() const {
-        if (scriptPath.empty()) {
-            throw std::invalid_argument("Script path cannot be empty");
-        }
-        // Add more validation as needed
     }
 };
 

@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <fcntl.h>
+#include <ios>
 #include <iostream>
 #include <kvm.h>
 #include <optional>
@@ -143,7 +144,7 @@ public:
       : _s(s), _m(m), _shell_1(my_shell) {
     std::vector<std::string> opts = {"arg1"};
 
-    _shell_1 = ShellScriptExecutor("./test.sh", opts);
+    _shell_1 = ShellScriptExecutor("./test.sh", opts, 10);
   }
 
   bool operator()() {
@@ -188,6 +189,30 @@ std::optional<InitializationResult> initialize(const std::string &file_path) {
 }
 
 // ----------------------------------------------------------------------------
+void printBanner() {
+  const int width = 40;
+  std::string programName = "tinypsmon";
+  std::string compileDate = __DATE__;
+  std::string author = "Jon Allen";
+
+  // Print top border
+  std::cout << std::string(width, '*') << std::endl;
+
+  // Print program name
+  std::cout << "*" << std::left << std::setw(width - 2)
+            << (" Program Name: " + programName) << "*" << std::endl;
+  logger.log("Starting Program Name: " + programName);
+  // Print compile date
+  std::cout << "*" << std::left << std::setw(width - 2)
+            << (" Compiled on: " + compileDate) << "*" << std::endl;
+  logger.log(" Compiled on: " + compileDate);
+  // Print author
+  std::cout << "*" << std::left << std::setw(width - 2)
+            << (" Author: " + author) << "*" << std::endl;
+  logger.log(" Author: " + author);
+  // Print bottom border
+  std::cout << std::string(width, '*') << std::endl;
+}
 
 int main(int, char *[]) {
   auto initResult = initialize("config.toml");
@@ -197,7 +222,7 @@ int main(int, char *[]) {
 
   std::vector<std::string> opts = {"arg1"};
 
-  auto alarm_sh = ShellScriptExecutor("./test.sh", opts);
+  auto alarm_sh = ShellScriptExecutor("./test.sh", opts, 10);
 
   const struct ::timespec rqt = {100, 0};
 
@@ -208,8 +233,9 @@ int main(int, char *[]) {
   TimerAlarm<mypoll> timer(pspoll, initResult->program.interval_seconds);
 
   timer.arm();
+
+  printBanner();
   while (true) {
-    std::cout << "starting...  \n";
 
     std::cout << "sleeping...  \n";
     nanosleep(&rqt, 0);
