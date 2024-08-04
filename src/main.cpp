@@ -97,6 +97,21 @@ public:
       std::cout << std::endl;
     }
   }
+  void logProcesses(const std::vector<ProcessInfo> &processList) {
+    for (const auto &proc : processList) {
+      std::string logMessage = "Process ID: " + std::to_string(proc.pid) +
+                               ", Process Name: " + proc.name +
+                               ", User: " + proc.user;
+      if (!proc.arguments.empty()) {
+        logMessage += ", Arguments: ";
+        for (const auto &arg : proc.arguments) {
+          logMessage += arg + ' ';
+        }
+      }
+      logMessage += "num args: " + std::to_string(proc.arguments.size()) + " ";
+      logger.log(logMessage);
+    }
+  }
 
   bool searchProcess(const std::vector<ProcessInfo> &processList,
                      const matchProcess &searchCriteria) {
@@ -152,7 +167,9 @@ public:
     std::cout << "mypoll:  " << _s << std::endl;
     logger.log("Testing ps... ");
     std::vector<ProcessInfo> processes = ps.getProcesses();
-    ps.printProcesses(processes);
+    if (_found == false) {
+      ps.logProcesses(processes);
+    }
     _found = ps.searchProcess(processes, _m);
     if (_found == true) {
       std::cout << "process:  " << _m.process_name << " found \n";
@@ -214,12 +231,28 @@ void printBanner() {
   std::cout << std::string(width, '*') << std::endl;
 }
 
-int main(int, char *[]) {
+void processCmdLine(std::string cmdparm) {
+  // ps is global
+  if (cmdparm == "-pslist" || cmdparm == "--ps") {
+
+    std::vector<ProcessInfo> processes = ps.getProcesses();
+    ps.printProcesses(processes);
+  } else {
+    std::cerr << "Cmdline invalid:  " << cmdparm << std::endl;
+  }
+}
+
+int main(int argc, char *argv[]) {
   auto initResult = initialize("config.toml");
   if (!initResult) {
     return EXIT_FAILURE;
   }
 
+  if (argc > 1) {
+    std::string cmdline1 = argv[1];
+    processCmdLine(cmdline1);
+    exit(0);
+  }
   std::vector<std::string> opts = {"arg1"};
 
   auto alarm_sh = ShellScriptExecutor("./test.sh", opts, 10);
