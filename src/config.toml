@@ -1,0 +1,34 @@
+# This is a TOML document for tinypsmon.
+# Author:  Jon Allen
+#
+# program section describes problem 
+# one wants to montor
+# all 3 must be true for it to activate
+# proram, user, and one parms
+# parm is a string search 
+# so it will be match a word in args   
+
+[program]
+
+pgm= "perl"
+parms = "webmin"
+user = "root"
+interval_seconds = 4 
+status = "down"
+# status can be up - meanint it starts running
+# status down mesns - it should be running and is down.
+
+###################################
+# options is a full string of parms
+# to pass to script
+
+[script]
+location = "/home/jon2allen/scripts"
+pgm = "alert.sh"
+options = "logger"
+throttle_minutes = 60
+# throttle_minutes = how many minutes before script is
+# executed after condition is met.
+
+
+# end of file

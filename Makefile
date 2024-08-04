@@ -44,6 +44,9 @@ shell_test3:
 
 file_perm:
 	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/file_perm.cpp -o $(TARGET_DIR)/file_perm
+
+toml:
+	cp $(SRC_DIR)/config.toml $(TARGET_DIR)
 # Clean
 clean:
 	rm -rf $(TARGET_DIR)
