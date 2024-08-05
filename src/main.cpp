@@ -159,9 +159,6 @@ public:
   mypoll(std::string s, matchProcess &m, ShellScriptExecutor my_shell,
          bool ps_s)
       : _s(s), _m(m), _shell_1(my_shell), ps_status(ps_s) {
-    std::vector<std::string> opts = {"arg1"};
-
-    _shell_1 = ShellScriptExecutor("./test.sh", opts, 10);
   }
 
   bool operator()() {
