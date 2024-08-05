@@ -26,7 +26,7 @@ status = "down"
 location = "/home/jon2allen/scripts"
 pgm = "alert.sh"
 options = "logger"
-throttle_minutes = 60
+throttle_seconds = 60
 # throttle_minutes = how many minutes before script is
 # executed after condition is met.
 
