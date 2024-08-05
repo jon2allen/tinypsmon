@@ -58,8 +58,8 @@ private:
     } catch (const toml::syntax_error &e) {
       throw std::runtime_error("Syntax error in TOML file: " +
                                std::string(e.what()));
-    } catch (const toml::type_error &e) {
-      throw std::runtime_error("Type error in TOML file: " +
+    } catch (const std::out_of_range &e) {
+      throw std::runtime_error("range error in TOML file: " +
                                std::string(e.what()));
     } catch (const std::exception &e) {
       //    throw std::runtime_error("Error parsing TOML file: " +

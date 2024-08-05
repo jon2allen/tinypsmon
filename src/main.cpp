@@ -271,7 +271,8 @@ int main(int argc, char *argv[]) {
   std::vector<std::string> opts = {initResult->script_info.options};
   std::string script1 =
       initResult->script_info.location + "/" + initResult->script_info.pgm;
-  auto alarm_sh = ShellScriptExecutor(script1, opts, 10);
+  auto alarm_sh = ShellScriptExecutor(script1, opts,
+                                      initResult->script_info.throttle_seconds);
 
   if (alarm_sh.isShellgood() == false) {
     std::cout << "bad script: " << script1 << "  - correct toml config "
