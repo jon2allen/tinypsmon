@@ -158,8 +158,7 @@ class mypoll {
 public:
   mypoll(std::string s, matchProcess &m, ShellScriptExecutor my_shell,
          bool ps_s)
-      : _s(s), _m(m), _shell_1(my_shell), ps_status(ps_s) {
-  }
+      : _s(s), _m(m), _shell_1(my_shell), ps_status(ps_s) {}
 
   bool operator()() {
 
@@ -274,6 +273,11 @@ int main(int argc, char *argv[]) {
       initResult->script_info.location + "/" + initResult->script_info.pgm;
   auto alarm_sh = ShellScriptExecutor(script1, opts, 10);
 
+  if (alarm_sh.isShellgood() == false) {
+    std::cout << "bad script: " << script1 << "  - correct toml config "
+              << std::endl;
+    exit(4);
+  }
   const struct ::timespec rqt = {100, 0};
 
   struct ::matchProcess m = {initResult->program.pgm, initResult->program.user,
