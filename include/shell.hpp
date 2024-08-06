@@ -9,10 +9,23 @@
 #include <unistd.h>
 #include <vector>
 
+/**
+ * @class ShellScriptExecutor
+ * @brief Class for executing shell scripts with throttle control and input validation.
+ */
+
 class ShellScriptExecutor {
-  bool shell_good = false;
+  bool shell_good = false;  /**< Boolean flag indicating the validity of the shell environment. */
 
 public:
+
+ /**
+   * @brief Constructor for ShellScriptExecutor.
+   * @param scriptPath The path to the shell script to be executed.
+   * @param args The arguments to be passed to the shell script.
+   * @param time_throttle The time throttle in seconds to control script execution frequency.
+   */
+
   ShellScriptExecutor(const std::string &scriptPath,
                       const std::vector<std::string> &args, int time_throttle)
       : scriptPath(scriptPath), args(args), time_throttle(time_throttle),
@@ -20,6 +33,10 @@ public:
     validateInputs();
   }
 
+  /**
+   * @brief Executes the shell script if throttle conditions are met.
+   * @return A string containing the output of the shell script execution or a message indicating throttle conditions.
+   */
   std::string execute() {
     auto now = std::chrono::system_clock::now().time_since_epoch();
     auto now_seconds =
@@ -33,15 +50,23 @@ public:
       return "Throttle time not reached. Script not executed.";
     }
   }
-
+  /**
+   * @brief Checks the validity of the shell environment.
+   * @return True if the shell environment is valid, otherwise false.
+   */
   bool isShellgood() { return shell_good; }
 
 private:
-  std::string scriptPath;
-  std::vector<std::string> args;
-  int time_throttle;
-  long long time_last_executed;
-  struct stat fileStat;
+  std::string scriptPath;  /**< The path to the shell script. */
+  std::vector<std::string> args;  /**< The arguments to be passed to the shell script. */
+  int time_throttle;  /**< The time throttle in seconds to control script execution frequency. */
+  long long time_last_executed;   /**< The timestamp of the last script execution. */
+  struct stat fileStat;  /**< A struct to hold file status information. */
+
+/**
+   * @brief Executes the shell script and captures the output.
+   * @return A string containing the output of the shell script execution.
+   */
   void validateInputs() {
     if (scriptPath.empty()) {
       shell_good = false;
