@@ -13,7 +13,7 @@ class Logger {
 
 public:
     // constructor that takes the file name as a parameter and opens the file
-    Logger(const std::string& fname) : filename(fname), file(fname) {
+    Logger(const std::string& fname) : filename(fname), file(fname, std::ios::out | std::ios::app) {
         if (!file) {
             throw std::runtime_error("Failed to open file " + fname);
         }

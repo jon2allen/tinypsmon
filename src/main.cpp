@@ -165,17 +165,21 @@ public:
     std::cout << "mypoll:  " << _s << std::endl;
     logger.log("Testing ps... ");
     std::vector<ProcessInfo> processes = ps.getProcesses();
-    if (_found == false) {
-      ps.logProcesses(processes);
-    }
+    // if (_found == false) {
+    //   ps.logProcesses(processes);
+    //  }
+    //  ** maybe have some verbose debug option that dumps
     _found = ps.searchProcess(processes, _m);
     if (_found == true) {
 
       logger.log("process:  " + _m.process_name + " found");
       if (ps_status == _found) {
-        std::cout << "not found \n";
+        ps.logProcesses(processes);
+        std::cout << "status change.. running script\n";
+        logger.log("status change.. running script");
         std::string output = _shell_1.execute();
         std::cout << "Script output: \n" << output << std::endl;
+        logger.log("Script output: \n" + output);
       }
     }
     return (true);
