@@ -5,6 +5,7 @@
 #include "shell.hpp"
 #include "toml_reader.hpp"
 #include <cassert>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -98,39 +99,51 @@ public:
       std::cout << std::endl;
     }
   }
+
+  void logSingleProcess(const ProcessInfo &proc) {
+    std::string logMessage = "Process ID: " + std::to_string(proc.pid) +
+                             ", Process Name: " + proc.name +
+                             ", User: " + proc.user;
+
+    if (!proc.arguments.empty()) {
+      logMessage += ", Arguments: ";
+      for (const auto &arg : proc.arguments) {
+        logMessage += arg + ' ';
+      }
+    }
+
+    logMessage += "num args: " + std::to_string(proc.arguments.size()) + " ";
+    logger.log(logMessage);
+  }
+
   void logProcesses(const std::vector<ProcessInfo> &processList) {
     for (const auto &proc : processList) {
-      std::string logMessage = "Process ID: " + std::to_string(proc.pid) +
-                               ", Process Name: " + proc.name +
-                               ", User: " + proc.user;
-      if (!proc.arguments.empty()) {
-        logMessage += ", Arguments: ";
-        for (const auto &arg : proc.arguments) {
-          logMessage += arg + ' ';
-        }
-      }
-      logMessage += "num args: " + std::to_string(proc.arguments.size()) + " ";
-      logger.log(logMessage);
+      logSingleProcess(proc);
     }
   }
 
   bool searchProcess(const std::vector<ProcessInfo> &processList,
-                     const matchProcess &searchCriteria) {
+                     const matchProcess &searchCriteria,
+                     const ProcessInfo *&foundProcess) {
+    foundProcess = nullptr;
     // Iterate through the list of processes
     for (const auto &process : processList) {
       // Check if the process name matches
       if (process.name == searchCriteria.process_name) {
         // Check if the username matches
-        logger.log(" match - process name: " + searchCriteria.process_name);
+        // logger.log(" match - process name: " + searchCriteria.process_name);
         if (process.user == searchCriteria.username) {
           // Check if any argument matches
-          logger.log(" match - user name: " + searchCriteria.username);
+          // logger.log(" match - user name: " + searchCriteria.username);
           if (std::any_of(process.arguments.begin(), process.arguments.end(),
                           [&](const std::string &arg) {
                             return arg.find(searchCriteria.argument) !=
                                    std::string::npos;
                           })) {
             logger.log(" matach -> " + searchCriteria.argument);
+            logger.log(" match - user name: " + searchCriteria.username);
+            logger.log(" match - process name: " + searchCriteria.process_name);
+            foundProcess = &process;
             return true; // All conditions met
           }
         }
@@ -161,7 +174,7 @@ public:
       : _s(s), _m(m), _shell_1(my_shell), ps_status(ps_s) {}
 
   bool operator()() {
-
+    const ProcessInfo *ps_t = nullptr;
     std::cout << "mypoll:  " << _s << std::endl;
     logger.log("Testing ps... ");
     std::vector<ProcessInfo> processes = ps.getProcesses();
@@ -169,12 +182,15 @@ public:
     //   ps.logProcesses(processes);
     //  }
     //  ** maybe have some verbose debug option that dumps
-    _found = ps.searchProcess(processes, _m);
+    _found = ps.searchProcess(processes, _m, ps_t);
     if (_found == true) {
 
       logger.log("process:  " + _m.process_name + " found");
       if (ps_status == _found) {
-        ps.logProcesses(processes);
+        // ps.logProcesses(processes);
+        if (ps_t != nullptr) {
+          ps.logSingleProcess(*ps_t);
+        }
         std::cout << "status change.. running script\n";
         logger.log("status change.. running script");
         std::string output = _shell_1.execute();
