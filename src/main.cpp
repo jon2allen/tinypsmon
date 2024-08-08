@@ -24,7 +24,7 @@
 #include <sys/user.h>
 #include <vector>
 
-Logger logger("new_log.txt");
+Logger logger("tinypsmon.log");
 
 struct ProcessInfo {
   std::string name;
@@ -313,8 +313,10 @@ int main(int argc, char *argv[]) {
 
   printBanner();
   while (true) {
-
-    std::cout << "sleeping...  \n";
+    logger.log("Main loop");
+    std::vector<ProcessInfo> processes = ps.getProcesses();
+    ps.logProcesses(processes);
+    // std::cout << "sleeping...  \n";
     nanosleep(&rqt, 0);
   }
   return (EXIT_SUCCESS);

@@ -4,6 +4,7 @@ TARGET_DIR = target
 
 # Flags
 CXXFLAGS = -Wall -Wextra -g -std=c++20 -I$(INC_DIR)
+#CXXFLAGS = -Wall -Wextra -O2 -std=c++20 -I$(INC_DIR)
 LDFLAGS = -lkvm -lpthread
 
 # Source files
@@ -41,6 +42,13 @@ shell_test:
 
 shell_test3:
 	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/shell_test3.cpp -o $(TARGET_DIR)/shell_test3
+
+toml_test1:
+	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/toml_test1.cpp -o $(TARGET_DIR)/toml_test1
+
+
+toml_test2:
+	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/toml_test2.cpp -o $(TARGET_DIR)/toml_test2
 
 file_perm:
 	$(CXX) $(CXXFLAGS) -lkvm $(SRC_DIR)/file_perm.cpp -o $(TARGET_DIR)/file_perm
