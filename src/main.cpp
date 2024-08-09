@@ -186,17 +186,19 @@ public:
     if (_found == true) {
 
       logger.log("process:  " + _m.process_name + " found");
-      if (ps_status == _found) {
-        // ps.logProcesses(processes);
-        if (ps_t != nullptr) {
-          ps.logSingleProcess(*ps_t);
-        }
-        std::cout << "status change.. running script\n";
-        logger.log("status change.. running script");
-        std::string output = _shell_1.execute();
-        std::cout << "Script output: \n" << output << std::endl;
-        logger.log("Script output: \n" + output);
+    }
+    if (ps_status == _found) {
+      // ps.logProcesses(processes);
+      if (ps_t != nullptr) {
+        ps.logSingleProcess(*ps_t);
       }
+      std::cout << "status change.. running script\n";
+      logger.log("status change.. running script");
+      std::string output = _shell_1.execute();
+      std::cout << "Script output: \n" << output << std::endl;
+      logger.log("Script output start: ");
+      logger.logMultiline(output);
+      logger.log("Script output end:");
     }
     return (true);
   }
