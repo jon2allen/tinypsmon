@@ -1,3 +1,5 @@
+#include <dirent.h>
+
 struct ProcessInfo {
    std::string name;
    int pid;
@@ -13,43 +15,47 @@ struct ProcessInfo {
 
 class ProcessLister {
 public:
-    std::vector<ProcessInfo> getProcesses() {
+
+   std::vector<ProcessInfo> getProcesses() {
         std::vector<ProcessInfo> processList;
-        DIR* dir = opendir("/proc");
-        if (dir != nullptr) {
-            struct dirent* entry;
-            while ((entry = readdir(dir)) != nullptr) {
-                if (entry->d_type == DT_DIR) {
-                    std::string pidStr = entry->d_name;
-                    if (std::all_of(pidStr.begin(), pidStr.end(), ::isdigit)) {
-                        ProcessInfo proc;
-                        proc.pid = std::stoi(pidStr);
+        std::string line;
+        std::ifstream procFile("/proc");
 
-                        std::ifstream cmdlineFile("/proc/" + pidStr + "/cmdline");
-                        if (cmdlineFile.is_open()) {
-                            std::getline(cmdlineFile, proc.name);
-                            cmdlineFile.close();
+        for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
+            if (entry.is_directory()) {
+                std::string pidStr = entry.path().filename().string();
+                if (std::all_of(pidStr.begin(), pidStr.end(), ::isdigit)) {
+                    ProcessInfo proc;
+                    proc.pid = std::stoi(pidStr);
+
+                    std::ifstream cmdlineFile(entry.path() / "cmdline");
+                    std::getline(cmdlineFile, line, '\0');
+                    std::istringstream iss(line);
+                    std::getline(iss, proc.name, '\0');
+
+                    std::ifstream statusFile(entry.path() / "status");
+                    while (std::getline(statusFile, line)) {
+                        if (line.find("Uid:") == 0) {
+                            std::istringstream uidStream(line.substr(5));
+                            int uid;
+                            uidStream >> uid;
+                            struct passwd *pw = getpwuid(uid);
+                            proc.user = (pw != nullptr) ? pw->pw_name : "Unknown";
+                            break;
                         }
-
-                        // Get the user name for the process
-                        struct stat statBuf;
-                        if (stat(("/proc/" + pidStr).c_str(), &statBuf) == 0) {
-                            struct passwd *pw = getpwuid(statBuf.st_uid);
-                            if (pw != nullptr) {
-                                proc.username = pw->pw_name;
-                            }
-                        }
-
-                        processList.push_back(proc);
                     }
+
+                    std::ifstream argsFile(entry.path() / "cmdline");
+                    while (std::getline(argsFile, line, '\0')) {
+                        proc.arguments.push_back(line);
+                    }
+
+                    processList.push_back(proc);
                 }
             }
-            closedir(dir);
-        } else {
-            std::cerr << "Unable to open /proc directory" << std::endl;
         }
         return processList;
-   }
+    }
 
 
   void printProcesses(const std::vector<ProcessInfo> &processList) {

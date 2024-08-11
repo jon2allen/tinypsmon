@@ -16,20 +16,28 @@
 #include <fcntl.h>
 #include <ios>
 #include <iostream>
-#include <kvm.h>
+#ifdef __FreeBSD__
+#include <kvm.h>  //freebsd
+#endif
 #include <optional>
 #include <paths.h>
 #include <pwd.h> // Include for getpwuid
 #include <stdint.h>
 #include <string>
-// #include <sys/resourcevar.h>
-#include <sys/sysctl.h>
+#ifdef __FreeBSD__
+#include <sys/sysctl.h>  // freebsd
+#endif
 #include <sys/types.h>
 #include <sys/user.h>
 #include <vector>
 Logger logger("tinypsmon.log");
-
+#ifdef __FreeBSD__
 #include "bsd_process.hpp"
+#endif
+#ifndef __FreeBSD__
+#include "linux_process.hpp" 
+#endif
+
 
 using namespace hmta;
 
