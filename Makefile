@@ -2,17 +2,14 @@ SRC_DIR = src
 INC_DIR = include
 TARGET_DIR = target
 
+OSNAME = $$(uname)
+OSNAME4 != echo $(OSNAME)
 # Flags
 CXXFLAGS = -Wall -Wextra -g -std=c++20 -I$(INC_DIR)
 #CXXFLAGS = -Wall -Wextra -O2 -std=c++20 -I$(INC_DIR)
 
-# Detect OS and set LDFLAGS accordingly
-ifeq ($(shell uname), FreeBSD)
-    LDFLAGS = -lkvm -lpthread
-else
-    LDFLAGS = -lpthread
-endif
-
+#include platform-specific MakefIle
+include Makefile.$(OSNAME4)
 # Source files
 SRCS = ./$(SRC_DIR)/main.cpp
 
