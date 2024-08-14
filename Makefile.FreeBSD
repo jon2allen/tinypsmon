@@ -1,2 +1,2 @@
-LDFLAGS = -lkvm -lpthread
+LDFLAGS = -lkvm -lpthread -lz
 
