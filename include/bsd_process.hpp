@@ -1,18 +1,20 @@
 struct ProcessInfo {
-   std::string name;
-   int pid;
-   std::string user; // Add a field for the username
-   std::vector<std::string> arguments;
+  std::string name;
+  int pid;
+  std::string user; // Add a field for the username
+  std::vector<std::string> arguments;
 };
 
- struct matchProcess {
-   std::string process_name;
-   std::string username;
-   std::string argument;
+struct matchProcess {
+  std::string process_name;
+  std::string username;
+  std::string argument;
 };
 
 class ProcessLister {
 public:
+  std::vector<int> pid_cache;
+
   std::vector<ProcessInfo> getProcesses() {
     std::vector<ProcessInfo> processList;
     kvm_t *kd = kvm_open(NULL, _PATH_DEVNULL, NULL, O_RDONLY, "kvm_open");
@@ -48,6 +50,10 @@ public:
         }
 
         processList.push_back(proc);
+        if (searchPidcache(proc.pid) == true) {
+          logger.log("found pid: : " + std::to_string(proc.pid));
+          std::swap(processList.front(), processList.back());
+        }
       }
       kvm_close(kd);
     } else {
@@ -94,6 +100,23 @@ public:
     }
   }
 
+  void setPidcache(const int p) {
+    if ( searchPidcache(p) == false ) {
+        pid_cache.push_back(p); 
+     }
+  }
+
+  bool searchPidcache(const int p) {
+    for (const auto &mypid : pid_cache) {
+      if (mypid == p) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void flushPidcache() { pid_cache.clear(); }
+
   bool searchProcess(const std::vector<ProcessInfo> &processList,
                      const matchProcess &searchCriteria,
                      const ProcessInfo *&foundProcess) {
@@ -116,6 +139,7 @@ public:
             logger.log(" match - user name: " + searchCriteria.username);
             logger.log(" match - process name: " + searchCriteria.process_name);
             foundProcess = &process;
+            setPidcache(process.pid);
             return true; // All conditions met
           }
         }
@@ -126,4 +150,3 @@ public:
     return false; // No matching process found
   }
 };
-
