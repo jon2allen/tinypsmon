@@ -1,2 +1,2 @@
-GS = -lpthread
+LDFLAGS = -lpthread -lz
 
