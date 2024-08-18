@@ -13,7 +13,7 @@ struct matchProcess {
 
 class ProcessLister {
 public:
-  std::vector<int> pid_cache;
+  std::set<int> pid_cache;
 
   std::vector<ProcessInfo> getProcesses() {
     std::vector<ProcessInfo> processList;
@@ -101,8 +101,9 @@ public:
   }
 
   void setPidcache(const int p) {
-    if ( searchPidcache(p) == false ) {
-        pid_cache.push_back(p); 
+    if ( pid_cache.find(p) == pid_cache.end()) {
+        pid_cache.insert(p); 
+        logger.log( "pid cache:  " + std::to_string( pid_cache.size() ) );
      }
   }
 
@@ -115,7 +116,12 @@ public:
     return false;
   }
 
-  void flushPidcache() { pid_cache.clear(); }
+  void flushPidcache() { 
+     if ( pid_cache.size() > 10 ) {
+        pid_cache.clear();
+        logger.log("flushing cache");
+     }
+ }
 
   bool searchProcess(const std::vector<ProcessInfo> &processList,
                      const matchProcess &searchCriteria,
@@ -147,6 +153,7 @@ public:
     }
     logger.log(" no match found -> process: " + searchCriteria.process_name +
                " user:  " + searchCriteria.username);
+    flushPidcache();
     return false; // No matching process found
   }
 };

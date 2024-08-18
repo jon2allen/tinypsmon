@@ -24,6 +24,7 @@
 #include <pwd.h> // Include for getpwuid
 #include <stdint.h>
 #include <string>
+#include  <set>
 #ifdef __FreeBSD__
 #include <sys/sysctl.h>  // freebsd
 #endif
