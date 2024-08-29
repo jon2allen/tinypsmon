@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -11,6 +12,7 @@ class Logger {
   std::string filename;    // the name of the file to write to
   std::ofstream file;      // the file stream object
   std::string lastLogDate; // the date of the last log entry
+  std::mutex log_mtx;
 
 public:
   // constructor that takes the file name as a parameter and opens the file
@@ -29,6 +31,7 @@ public:
   // method that takes a message as a parameter and writes it to the file with a
   // timestamp
   void log(const std::string &message) {
+    std::lock_guard<std::mutex> lock(log_mtx);
     handleDateChange();
     logMessageWithTimestamp(message);
   }
@@ -36,6 +39,7 @@ public:
   // New method to handle multiline input and log each line with a timestamp
   // prefix
   void logMultiline(const std::string &multilineInput) {
+    std::lock_guard<std::mutex> lock(log_mtx);
     handleDateChange();
     std::istringstream iss(multilineInput);
     std::string line;
