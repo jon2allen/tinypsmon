@@ -130,6 +130,7 @@ public:
     }
     logger.log(" no match found -> process: " + searchCriteria.process_name +
                " user:  " + searchCriteria.username);
+    flushPidcache();
     return false; // No matching process found
   }
   void setPidcache(const int p) {
