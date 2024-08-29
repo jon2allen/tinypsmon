@@ -1,62 +1,66 @@
 #include <dirent.h>
 
 struct ProcessInfo {
-   std::string name;
-   int pid;
-   std::string user; // Add a field for the username
-   std::vector<std::string> arguments;
+  std::string name;
+  int pid;
+  std::string user; // Add a field for the username
+  std::vector<std::string> arguments;
 };
 
- struct matchProcess {
-   std::string process_name;
-   std::string username;
-   std::string argument;
+struct matchProcess {
+  std::string process_name;
+  std::string username;
+  std::string argument;
 };
 
 class ProcessLister {
 public:
+  std::set<int> pid_cache;
 
-   std::vector<ProcessInfo> getProcesses() {
-        std::vector<ProcessInfo> processList;
-        std::string line;
-        std::ifstream procFile("/proc");
+  std::vector<ProcessInfo> getProcesses() {
+    std::vector<ProcessInfo> processList;
+    std::string line;
+    std::ifstream procFile("/proc");
 
-        for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
-            if (entry.is_directory()) {
-                std::string pidStr = entry.path().filename().string();
-                if (std::all_of(pidStr.begin(), pidStr.end(), ::isdigit)) {
-                    ProcessInfo proc;
-                    proc.pid = std::stoi(pidStr);
+    for (const auto &entry : std::filesystem::directory_iterator("/proc")) {
+      if (entry.is_directory()) {
+        std::string pidStr = entry.path().filename().string();
+        if (std::all_of(pidStr.begin(), pidStr.end(), ::isdigit)) {
+          ProcessInfo proc;
+          proc.pid = std::stoi(pidStr);
 
-                    std::ifstream cmdlineFile(entry.path() / "cmdline");
-                    std::getline(cmdlineFile, line, '\0');
-                    std::istringstream iss(line);
-                    std::getline(iss, proc.name, '\0');
+          std::ifstream cmdlineFile(entry.path() / "cmdline");
+          std::getline(cmdlineFile, line, '\0');
+          std::istringstream iss(line);
+          std::getline(iss, proc.name, '\0');
 
-                    std::ifstream statusFile(entry.path() / "status");
-                    while (std::getline(statusFile, line)) {
-                        if (line.find("Uid:") == 0) {
-                            std::istringstream uidStream(line.substr(5));
-                            int uid;
-                            uidStream >> uid;
-                            struct passwd *pw = getpwuid(uid);
-                            proc.user = (pw != nullptr) ? pw->pw_name : "Unknown";
-                            break;
-                        }
-                    }
-
-                    std::ifstream argsFile(entry.path() / "cmdline");
-                    while (std::getline(argsFile, line, '\0')) {
-                        proc.arguments.push_back(line);
-                    }
-
-                    processList.push_back(proc);
-                }
+          std::ifstream statusFile(entry.path() / "status");
+          while (std::getline(statusFile, line)) {
+            if (line.find("Uid:") == 0) {
+              std::istringstream uidStream(line.substr(5));
+              int uid;
+              uidStream >> uid;
+              struct passwd *pw = getpwuid(uid);
+              proc.user = (pw != nullptr) ? pw->pw_name : "Unknown";
+              break;
             }
-        }
-        return processList;
-    }
+          }
 
+          std::ifstream argsFile(entry.path() / "cmdline");
+          while (std::getline(argsFile, line, '\0')) {
+            proc.arguments.push_back(line);
+          }
+
+          processList.push_back(proc);
+          if (searchPidcache(proc.pid) == true) {
+            logger.log("found pid: : " + std::to_string(proc.pid));
+            std::swap(processList.front(), processList.back());
+          }
+        }
+      }
+    }
+    return processList;
+  }
 
   void printProcesses(const std::vector<ProcessInfo> &processList) {
     for (const auto &proc : processList) {
@@ -118,6 +122,7 @@ public:
             logger.log(" match - user name: " + searchCriteria.username);
             logger.log(" match - process name: " + searchCriteria.process_name);
             foundProcess = &process;
+            setPidcache(process.pid);
             return true; // All conditions met
           }
         }
@@ -127,5 +132,26 @@ public:
                " user:  " + searchCriteria.username);
     return false; // No matching process found
   }
-};
+  void setPidcache(const int p) {
+    if (pid_cache.find(p) == pid_cache.end()) {
+      pid_cache.insert(p);
+      logger.log("pid cache:  " + std::to_string(pid_cache.size()));
+    }
+  }
 
+  bool searchPidcache(const int p) {
+    for (const auto &mypid : pid_cache) {
+      if (mypid == p) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void flushPidcache() {
+    if (pid_cache.size() > 10) {
+      pid_cache.clear();
+      logger.log("flushing cache");
+    }
+  }
+};
