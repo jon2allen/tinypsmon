@@ -20,6 +20,4 @@ for Toml reading it will use
 
 https://github.com/ToruNiina/toml11
 
-and Lyra for any command line parsing
 
-https://www.bfgroup.xyz/Lyra/lyra.html
