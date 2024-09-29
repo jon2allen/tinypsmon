@@ -36,17 +36,16 @@ Logger logger("tinypsmon.log");
 #include "bsd_process.hpp"
 #endif
 #ifndef __FreeBSD__
-#include "linux_process.hpp" 
+#include "linux_process.hpp"
 #endif
-
 
 using namespace hmta;
 
 // ----------------------------------------------------------------------------
 
 struct InitializationResult {
-  Program program;
-  Script script_info;
+  std::vector<Program> programs;
+  std::vector<Script> scripts;
 };
 
 ProcessLister ps;
@@ -63,17 +62,13 @@ public:
     std::cout << "mypoll:  " << _s << std::endl;
     logger.log("Testing ps... ");
     std::vector<ProcessInfo> processes = ps.getProcesses();
-    // if (_found == false) {
-    //   ps.logProcesses(processes);
-    //  }
-    //  ** maybe have some verbose debug option that dumps
+    
     _found = ps.searchProcess(processes, _m, ps_t);
     if (_found == true) {
-
       logger.log("process:  " + _m.process_name + " found");
     }
+    
     if (ps_status == _found) {
-      // ps.logProcesses(processes);
       if (ps_t != nullptr) {
         ps.logSingleProcess(*ps_t);
       }
@@ -91,7 +86,6 @@ public:
 private:
   std::string _s;
   matchProcess &_m;
-  std::optional<InitializationResult> _parms;
   bool _found = false;
   ShellScriptExecutor _shell_1;
   bool ps_status = false;
@@ -100,25 +94,28 @@ private:
 std::optional<InitializationResult> initialize(const std::string &file_path) {
   try {
     TomlParser parser(file_path);
-    const Program &ps1 = parser.getProgram();
-    const Script script1 = parser.getScript();
-    std::cout << "  pgm: " << ps1.pgm << "\n";
-    std::cout << "  parms: " << ps1.parms << "\n";
-    std::cout << "  user: " << ps1.user << "\n";
+    const auto &programs = parser.getPrograms();
+    const auto &scripts = parser.getScripts();
 
-    return InitializationResult{ps1, script1};
+    // Ensure we have at least one program and one script
+    if (programs.empty() || scripts.empty()) {
+      std::cerr << "No valid program or script entries found in the TOML file." << std::endl;
+      return std::nullopt;
+    }
+
+    // Log first program and script for initialization confirmation
+    std::cout << "  pgm: " << programs[0].pgm << "\n";
+    std::cout << "  parms: " << programs[0].parms << "\n";
+    std::cout << "  user: " << programs[0].user << "\n";
+
+    return InitializationResult{programs, scripts};
   } catch (const std::exception &e) {
     std::cerr << "Invalid TOML file: " << e.what() << std::endl;
     return std::nullopt;
   }
 }
-//*********************************************
-// process statue
-//  ps target is when script is fired
-//  so if target id down - process now running
-//  then execute script
-//***********************************************
-bool processState(std::string status) {
+
+bool processState(const std::string &status) {
   if (status == "down") {
     logger.log(" desired ps target is down");
     return false;
@@ -132,7 +129,6 @@ bool processState(std::string status) {
   }
 }
 
-// ----------------------------------------------------------------------------
 void printBanner() {
   const int width = 40;
   std::string programName = "tinypsmon";
@@ -146,22 +142,23 @@ void printBanner() {
   std::cout << "*" << std::left << std::setw(width - 2)
             << (" Program Name: " + programName) << "*" << std::endl;
   logger.log("Starting Program Name: " + programName);
+
   // Print compile date
   std::cout << "*" << std::left << std::setw(width - 2)
             << (" Compiled on: " + compileDate) << "*" << std::endl;
   logger.log(" Compiled on: " + compileDate);
+
   // Print author
   std::cout << "*" << std::left << std::setw(width - 2)
             << (" Author: " + author) << "*" << std::endl;
   logger.log(" Author: " + author);
+
   // Print bottom border
   std::cout << std::string(width, '*') << std::endl;
 }
 
-void processCmdLine(std::string cmdparm) {
-  // ps is global
+void processCmdLine(const std::string &cmdparm) {
   if (cmdparm == "-pslist" || cmdparm == "--ps") {
-
     std::vector<ProcessInfo> processes = ps.getProcesses();
     ps.printProcesses(processes);
   } else {
@@ -180,44 +177,39 @@ int main(int argc, char *argv[]) {
     processCmdLine(cmdline1);
     exit(0);
   }
-  std::vector<std::string> opts = {initResult->script_info.options};
-  std::string script1 =
-      initResult->script_info.location + "/" + initResult->script_info.pgm;
-  auto alarm_sh = ShellScriptExecutor(script1, opts,
-                                      initResult->script_info.throttle_seconds);
 
-  if (alarm_sh.isShellgood() == false) {
+  // Use the first program and script for simplicity
+  const Program &program = initResult->programs[0];
+  const Script &script = initResult->scripts[0];
+
+  std::vector<std::string> opts = {script.options};
+  std::string script1 = script.location + "/" + script.pgm;
+  auto alarm_sh = ShellScriptExecutor(script1, opts, script.throttle_seconds);
+
+  if (!alarm_sh.isShellgood()) {
     std::cout << "bad script: " << script1 << "  - correct toml config "
               << std::endl;
     exit(4);
   }
+
   const struct ::timespec rqt = {100, 0};
 
-  struct ::matchProcess m = {initResult->program.pgm, initResult->program.user,
-                             initResult->program.parms};
-
-  bool ps_state = processState(initResult->program.status);
+  matchProcess m = {program.pgm, program.user, program.parms};
+  bool ps_state = processState(program.status);
 
   mypoll pspoll("mypoll", m, alarm_sh, ps_state);
-  TimerAlarm<mypoll> timer(pspoll, initResult->program.interval_seconds);
+  TimerAlarm<mypoll> timer(pspoll, program.interval_seconds);
 
   timer.arm();
-
   printBanner();
+
   while (true) {
     logger.log("Main loop");
     std::vector<ProcessInfo> processes = ps.getProcesses();
     ps.logProcesses(processes);
-    // std::cout << "sleeping...  \n";
-    nanosleep(&rqt, 0);
+    nanosleep(&rqt, nullptr);
   }
-  return (EXIT_SUCCESS);
+
+  return EXIT_SUCCESS;
 }
 
-// ----------------------------------------------------------------------------
-
-// Local Variables:
-// mode:C++
-// tab-width:4
-// c-basic-offset:4
-// End:
