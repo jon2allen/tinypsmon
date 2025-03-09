@@ -9,7 +9,10 @@
 
 ### Command Line Usage
 ```sh
-tinypsmon --pslist### Tiny PS Monitor
+tinypsmon --pslist
+
+```
+### Tiny PS Monitor - config
 
 
 ### Config.toml
@@ -52,9 +55,9 @@ throttle_seconds = 60
 
 
 ## Libraries used
--this project uses Cheetah for scheduling
--https://github.com/hosseinmoein/Cheetah
--for Toml reading it will use
--https://github.com/ToruNiina/toml11
+- this project uses Cheetah for scheduling
+- https://github.com/hosseinmoein/Cheetah
+- for Toml reading it will use
+- https://github.com/ToruNiina/toml11
 
 
