@@ -1,20 +1,19 @@
-### Tiny PS Monitor
+# Tiny PS Monitor
 
-planned - freebsd/linux support
+## Planned Features
+- FreeBSD/Linux support  
+- Small footprint up/down monitor  
+- Configure via TOML file  
+- Key in on process name, `user_id`, and arguments  
+- If condition (`up` or `down`) is met, execute a script based on time throttle  
 
-small footprint up/down monitor 
-
-configure via toml file
-
-key in on process name, user_id, args
-
-if condition ( up or down ) meet - execute script based on time-throttle 
-
-cmdline - tinypsmon --pslist -> shows how the program sees the process list
+### Command Line Usage
+```sh
+tinypsmon --pslist### Tiny PS Monitor
 
 
 ### Config.toml
-```
+```sj
 # This is a TOML document for tinypsmon.
 # Author:  Jon Allen
 #
@@ -51,12 +50,11 @@ throttle_seconds = 60
 # end of file
 ```
 
-this project uses Cheetah for scheduling
 
-https://github.com/hosseinmoein/Cheetah
-
-for Toml reading it will use
-
-https://github.com/ToruNiina/toml11
+## Libraries used
+-this project uses Cheetah for scheduling
+-https://github.com/hosseinmoein/Cheetah
+-for Toml reading it will use
+-https://github.com/ToruNiina/toml11
 
 
